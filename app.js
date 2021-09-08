@@ -52,6 +52,8 @@ app.get('/index', (req, res) => {
       });
       console.log("Result: ", results);
       res.render('index.ejs', { items: results });
+      // переписать 
+      // res.json ПОСМОТРЕТЬ
     }
   );
 });
