@@ -40,6 +40,7 @@ const connection = mysql.createConnection({
 app.get('/', (req, res) => {
   res.render('top.ejs')
 });
+// удалить это и все подобные 
 
 app.get('/index', (req, res) => {
   connection.query(
@@ -53,6 +54,7 @@ app.get('/index', (req, res) => {
       console.log("Result: ", results);
       res.render('index.ejs', { items: results });
       // переписать 
+      // сделать res.json(items) 
       // res.json ПОСМОТРЕТЬ
     }
   );
@@ -71,7 +73,7 @@ app.post('/create', (req, res) => {
     'INSERT INTO items (name, price, date) VALUES (?,?,?)',
     [req.body.itemName, req.body.itemPrice, req.body.date],
     (error, results) => {
-      res.redirect('/index');
+      res.redirect('/list');
     }
   );
 });
@@ -81,7 +83,7 @@ app.post('/delete/:id', (req, res) => {
     'DELETE FROM items WHERE id = ?',
     [req.params.id],
     (error, results) => {
-      res.redirect('/index');
+      res.redirect('/list');
     }
   );
 });
@@ -103,7 +105,7 @@ app.post('/update/:id', (req, res) => {
     [req.body.itemName, req.params.id],
     (error, results) => {
       console.log(error)
-      res.redirect('/index');
+      res.redirect('/list');
     }
   );
 });
@@ -122,7 +124,7 @@ app.post('/signup', (req, res) => {
     (error, result) => {
       req.session.userId = results.insertId;
       req.session.username = username; 
-      res.redirect('/index');
+      res.redirect('/list');
     }
   )
 })
@@ -141,7 +143,7 @@ app.post('/login', (req, res) => {
         if (req.body.password === results[0].password){
           req.session.userId = results[0].id;
           req.session.username = results[0].username;
-          res.redirect('/index');
+          res.redirect('/list');
         } else {
           res.redirect('/login');
         }    
