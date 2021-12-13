@@ -2,6 +2,10 @@ const express = require('express');
 const mysql = require('mysql');
 const app = express();
 const session = require('express-session');
+const cors = require('cors');
+
+app.use(cors());
+app.use(express.json());
 
 app.use(
   session({
@@ -24,6 +28,7 @@ app.use((req, res, next) => {
 
 const getLocaleString = (date) => {
   const tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+  console.log('DATE: ', date)
   return (new Date(+date - tzoffset)).toISOString().slice(0, -1);
 }
 
@@ -37,22 +42,24 @@ const connection = mysql.createConnection({
   database: 'nyamkaAPP'
 });
 
-app.get('/', (req, res) => {
-  res.render('top.ejs')
-});
+// app.get('/', (req, res) => {
+//   res.render('top.ejs')
+// });
 // удалить это и все подобные 
 
-app.get('/index', (req, res) => {
+app.get('/list', (req, res) => {
   connection.query(
     'SELECT * FROM items',
     (error, results) => {
+      console.log(error)
       results.forEach(item => {
         if (item.date !== null) {
           item.date = getLocaleString(item.date).split('T')[0]
         }
       });
       console.log("Result: ", results);
-      res.render('index.ejs', { items: results });
+      res.json({ items: results });
+      // res.render('index.ejs', { items: results });
       // переписать 
       // сделать res.json(items) 
       // res.json ПОСМОТРЕТЬ
@@ -60,22 +67,42 @@ app.get('/index', (req, res) => {
   );
 });
 
-app.get('/new', (req, res) => {
-  res.render('new.ejs');
-});
+// app.get('/new', (req, res) => {
+//   res.render('new.ejs');
+// });
 
-app.get('/about', (req, res) => {
-  res.render('about.ejs');
-});
+// app.get('/about', (req, res) => {
+//   res.render('about.ejs');
+// });
+
+// app.post('/create', (req, res) => {
+//   connection.query(
+//     'INSERT INTO items (name, price, date) VALUES (?,?,?)',
+//     [req.body.itemName, req.body.itemPrice, req.body.date],
+//     (error, results) => {
+//       res.redirect('/list');
+//     }
+//   );
+// });
 
 app.post('/create', (req, res) => {
-  connection.query(
-    'INSERT INTO items (name, price, date) VALUES (?,?,?)',
-    [req.body.itemName, req.body.itemPrice, req.body.date],
-    (error, results) => {
-      res.redirect('/list');
-    }
-  );
+  const isDateValid = req.body.date !== "";
+
+  if (!isDateValid) {
+    res.status(400).send({ message: 'Date is invalid' });
+  } else {
+    connection.query(
+      'INSERT INTO items (name, price, date) VALUES (?,?,?)',
+      [req.body.name, req.body.price, req.body.date],
+      (error, results) => {
+        console.log(error)
+        // res.redirect('/list');
+        // редирект не нужно делать. нужно разобраться с роутингом в реакте 
+      }
+    );
+  }
+
+
 });
 
 app.post('/delete/:id', (req, res) => {
@@ -88,15 +115,15 @@ app.post('/delete/:id', (req, res) => {
   );
 });
 
-app.get('/edit/:id', (req, res) => {
-  connection.query(
-    'SELECT * FROM items WHERE id = ?',
-    [req.params.id],
-    (error, results) => {
-      res.render('edit.ejs', { item: results[0] });
-    }
-  );
-});
+// app.get('/edit/:id', (req, res) => {
+//   connection.query(
+//     'SELECT * FROM items WHERE id = ?',
+//     [req.params.id],
+//     (error, results) => {
+//       res.render('edit.ejs', { item: results[0] });
+//     }
+//   );
+// });
 
 app.post('/update/:id', (req, res) => {
   console.log(`itemName : ${req.body.itemName} id: ${req.params.id}`)
@@ -110,9 +137,9 @@ app.post('/update/:id', (req, res) => {
   );
 });
 
-app.get('/signup', (req, res) => {
-  res.render('signup.ejs')
-})
+// app.get('/signup', (req, res) => {
+//   res.render('signup.ejs')
+// })
 
 app.post('/signup', (req, res) => {
   const username = req.body.username; 
@@ -129,9 +156,9 @@ app.post('/signup', (req, res) => {
   )
 })
 
-app.get('/login', (req, res) => {
-  res.render('login.ejs');
-});
+// app.get('/login', (req, res) => {
+//   res.render('login.ejs');
+// });
 
 app.post('/login', (req, res) => {
   const email = req.body.email;
@@ -154,11 +181,6 @@ app.post('/login', (req, res) => {
   );
 });
 
-app.get('/logout', (req, res) => {
-  req.session.destroy(error => {
-    res.redirect('/');
-  });
-});
-
+//  
 
 app.listen(3001);
