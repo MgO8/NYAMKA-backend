@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 
 const getLocaleString = (date) => {
   const tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-  console.log('DATE: ', date)
+  // console.log('DATE: ', date)
   return (new Date(+date - tzoffset)).toISOString().slice(0, -1);
 }
 
@@ -57,7 +57,7 @@ app.get('/list', (req, res) => {
           item.date = getLocaleString(item.date).split('T')[0]
         }
       });
-      console.log("Result: ", results);
+      // console.log("Result: ", results);
       res.json({ items: results });
       // res.render('index.ejs', { items: results });
       // переписать 
@@ -96,8 +96,11 @@ app.post('/create', (req, res) => {
       [req.body.name, req.body.price, req.body.date],
       (error, results) => {
         console.log(error)
+        res.json(results);
         // res.redirect('/list');
         // редирект не нужно делать. нужно разобраться с роутингом в реакте 
+
+        // отдать обратно созданный айтем (как сделать?)
       }
     );
   }
@@ -105,12 +108,13 @@ app.post('/create', (req, res) => {
 
 });
 
-app.post('/delete/:id', (req, res) => {
+app.delete('/delete/:id', (req, res) => {
+  console.log('brrmeow')
   connection.query(
     'DELETE FROM items WHERE id = ?',
     [req.params.id],
     (error, results) => {
-      res.redirect('/list');
+      // res.redirect('/list');
     }
   );
 });
@@ -142,15 +146,15 @@ app.post('/update/:id', (req, res) => {
 // })
 
 app.post('/signup', (req, res) => {
-  const username = req.body.username; 
-  const email = req.body.email; 
-  const password = req.body.password; 
+  const username = req.body.username;
+  const email = req.body.email;
+  const password = req.body.password;
   connection.query(
     'INSERT INTO users(username, email, password) VALUES (?,?,?)',
     [username, email, password],
     (error, result) => {
       req.session.userId = results.insertId;
-      req.session.username = username; 
+      req.session.username = username;
       res.redirect('/list');
     }
   )
@@ -167,13 +171,13 @@ app.post('/login', (req, res) => {
     [email],
     (error, results) => {
       if (results.length > 0) {
-        if (req.body.password === results[0].password){
+        if (req.body.password === results[0].password) {
           req.session.userId = results[0].id;
           req.session.username = results[0].username;
           res.redirect('/list');
         } else {
           res.redirect('/login');
-        }    
+        }
       } else {
         res.redirect('/login');
       }
