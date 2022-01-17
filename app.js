@@ -95,8 +95,12 @@ app.post('/create', (req, res) => {
       'INSERT INTO items (name, price, date) VALUES (?,?,?)',
       [req.body.name, req.body.price, req.body.date],
       (error, results) => {
-        console.log(error)
-        res.json(results);
+        connection.query(
+          `SELECT * FROM items WHERE id = ${results.insertId}`,
+          (error, results) => {
+            res.json(results);
+          }
+        )
         // res.redirect('/list');
         // редирект не нужно делать. нужно разобраться с роутингом в реакте 
 
@@ -114,7 +118,8 @@ app.delete('/delete/:id', (req, res) => {
     'DELETE FROM items WHERE id = ?',
     [req.params.id],
     (error, results) => {
-      // res.redirect('/list');
+      console.log(results)
+      res.json(req.params.id);
     }
   );
 });
