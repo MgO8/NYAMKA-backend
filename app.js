@@ -42,11 +42,6 @@ const connection = mysql.createConnection({
   database: 'nyamkaAPP'
 });
 
-// app.get('/', (req, res) => {
-//   res.render('top.ejs')
-// });
-// удалить это и все подобные 
-
 app.get('/list', (req, res) => {
   connection.query(
     'SELECT * FROM items',
@@ -67,27 +62,8 @@ app.get('/list', (req, res) => {
   );
 });
 
-// app.get('/new', (req, res) => {
-//   res.render('new.ejs');
-// });
-
-// app.get('/about', (req, res) => {
-//   res.render('about.ejs');
-// });
-
-// app.post('/create', (req, res) => {
-//   connection.query(
-//     'INSERT INTO items (name, price, date) VALUES (?,?,?)',
-//     [req.body.itemName, req.body.itemPrice, req.body.date],
-//     (error, results) => {
-//       res.redirect('/list');
-//     }
-//   );
-// });
-
 app.post('/create', (req, res) => {
   const isDateValid = req.body.date !== "";
-
   if (!isDateValid) {
     res.status(400).send({ message: 'Date is invalid' });
   } else {
@@ -105,6 +81,7 @@ app.post('/create', (req, res) => {
         // редирект не нужно делать. нужно разобраться с роутингом в реакте 
 
         // отдать обратно созданный айтем (как сделать?)
+        // как сделать КРАСИВО ???
       }
     );
   }
@@ -124,31 +101,21 @@ app.delete('/delete/:id', (req, res) => {
   );
 });
 
-// app.get('/edit/:id', (req, res) => {
-//   connection.query(
-//     'SELECT * FROM items WHERE id = ?',
-//     [req.params.id],
-//     (error, results) => {
-//       res.render('edit.ejs', { item: results[0] });
-//     }
-//   );
-// });
-
 app.post('/update/:id', (req, res) => {
-  console.log(`itemName : ${req.body.itemName} id: ${req.params.id}`)
+  console.log(`itemName : ${req.body.name} id: ${req.params.id}`)
   connection.query(
     'UPDATE items SET name = ? WHERE id = ?',
-    [req.body.itemName, req.params.id],
+    [req.body.name, req.params.id],
     (error, results) => {
-      console.log(error)
-      res.redirect('/list');
+      connection.query(
+        `SELECT * FROM items WHERE id = ${req.params.id}`,
+        (error, results) => {
+          res.json(results);
+        }
+      )
     }
   );
 });
-
-// app.get('/signup', (req, res) => {
-//   res.render('signup.ejs')
-// })
 
 app.post('/signup', (req, res) => {
   const username = req.body.username;
@@ -164,10 +131,6 @@ app.post('/signup', (req, res) => {
     }
   )
 })
-
-// app.get('/login', (req, res) => {
-//   res.render('login.ejs');
-// });
 
 app.post('/login', (req, res) => {
   const email = req.body.email;
@@ -189,7 +152,5 @@ app.post('/login', (req, res) => {
     }
   );
 });
-
-//  
 
 app.listen(3001);
