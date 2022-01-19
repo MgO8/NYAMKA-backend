@@ -127,7 +127,7 @@ app.post('/signup', (req, res) => {
     (error, result) => {
       req.session.userId = results.insertId;
       req.session.username = username;
-      res.redirect('/list');
+      res.json(results);
     }
   )
 })
